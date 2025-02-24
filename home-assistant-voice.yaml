@@ -14,6 +14,8 @@ substitutions:
   voice_assist_not_ready_phase_id: '10'
   # The voice assistant encountered an error
   voice_assist_error_phase_id: '11'
+  # Change this to true in case you ahve a hidden SSID at home.
+  hidden_ssid: "false"
 
 esphome:
   name: home-assistant-voice
@@ -65,6 +67,7 @@ esp32:
 
 wifi:
   id: wifi_id
+  fast_connect: ${hidden_ssid}
   on_connect:
     - lambda: id(improv_ble_in_progress) = false;
     - script.execute: control_leds
@@ -168,7 +171,6 @@ switch:
             - switch.template.publish:
                 id: master_mute_switch
                 state: ON
-      - voice_assistant.stop:
     turn_off_action:
       - if:
           condition:
@@ -177,7 +179,6 @@ switch:
             - switch.template.publish:
                 id: master_mute_switch
                 state: OFF
-      - voice_assistant.start_continuous:
     on_turn_on:
       - script.execute: control_leds
     on_turn_off:
@@ -283,32 +284,31 @@ binary_sensor:
                             media_player.stop:
                               announcement: true
                           else:
-                            # - if:
-                            #     condition:
-                            #       voice_assistant.is_running:
-                            #     then:
-                            #       - voice_assistant.stop:
-                            #     else:
                             - if:
                                 condition:
-                                  media_player.is_playing:
+                                  voice_assistant.is_running:
                                 then:
-                                  - media_player.pause:
-                                # else:
-                                #   - if:
-                                #       condition:
-                                #         and:
-                                #           - switch.is_off: master_mute_switch
-                                #           - not:
-                                #               voice_assistant.is_running
-                                #       then:
-
-                                #         - script.execute:
-                                #             id: play_sound
-                                #             priority: true
-                                #             sound_file: !lambda return id(center_button_press_sound);
-                                #         - delay: 300ms
-                                #         - voice_assistant.start:
+                                  - voice_assistant.stop:
+                                else:
+                                  - if:
+                                      condition:
+                                        media_player.is_playing:
+                                      then:
+                                        - media_player.pause:
+                                      else:
+                                        - if:
+                                            condition:
+                                              and:
+                                                - switch.is_off: master_mute_switch
+                                                - not:
+                                                    voice_assistant.is_running
+                                            then:
+                                              - script.execute:
+                                                  id: play_sound
+                                                  priority: true
+                                                  sound_file: !lambda return id(center_button_press_sound);
+                                              - delay: 300ms
+                                              - voice_assistant.start:
       # Double Click
       #  . Exposed as an event entity. To be used in automations inside Home Assistant
       - timing:
@@ -1360,18 +1360,6 @@ script:
       # Enable stop wake word
       - lambda: id(stop).enable();
 
-  # Script to handle the end of the streaming wake word voice assistant.
-  # Should we restart it? Shall we keep it stopped?
-  - id: handle_voice_assistant_end
-    then:
-      - if:
-          condition:
-              switch.is_off: master_mute_switch
-          then:
-            - voice_assistant.start_continuous:
-          else:
-            - voice_assistant.stop:
-            
 i2s_audio:
   - id: i2s_output
     # i2s_output data pin is gpio10
@@ -1486,35 +1474,35 @@ media_player:
               duration: 1.0s
     files:
       - id: center_button_press_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/center_button_press.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/center_button_press.flac
       - id: center_button_double_press_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/center_button_double_press.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/center_button_double_press.flac
       - id: center_button_triple_press_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/center_button_triple_press.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/center_button_triple_press.flac
       - id: center_button_long_press_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/center_button_long_press.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/center_button_long_press.flac
       - id: factory_reset_initiated_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/factory_reset_initiated.mp3
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/factory_reset_initiated.mp3
       - id: factory_reset_cancelled_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/factory_reset_cancelled.mp3
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/factory_reset_cancelled.mp3
       - id: factory_reset_confirmed_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/factory_reset_confirmed.mp3
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/factory_reset_confirmed.mp3
       - id: jack_connected_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/jack_connected.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/jack_connected.flac
       - id: jack_disconnected_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/jack_disconnected.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/jack_disconnected.flac
       - id: mute_switch_on_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/mute_switch_on.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/mute_switch_on.flac
       - id: mute_switch_off_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/mute_switch_off.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/mute_switch_off.flac
       - id: timer_finished_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/timer_finished.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/timer_finished.flac
       - id: wake_word_triggered_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/wake_word_triggered.flac
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/wake_word_triggered.flac
       - id: easter_egg_tick_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/easter_egg_tick.mp3
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/easter_egg_tick.mp3
       - id: easter_egg_tada_sound
-        file: https://github.com/RobMeades/home-assistant-voice-pe/raw/dev/sounds/easter_egg_tada.mp3
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/easter_egg_tada.mp3
 
 voice_kit:
   i2c_id: internal_i2c
@@ -1527,7 +1515,7 @@ voice_kit:
 external_components:
   - source:
       type: git
-      url: https://github.com/RobMeades/home-assistant-voice-pe
+      url: https://github.com/esphome/home-assistant-voice-pe
       ref: dev
     components:
       - micro_wake_word
@@ -1535,7 +1523,6 @@ external_components:
       - nabu_microphone
       - voice_assistant
       - voice_kit
-      - audio
     refresh: 0s
 
 audio_dac:
@@ -1546,12 +1533,14 @@ audio_dac:
 micro_wake_word:
   id: mww
   models:
-    # - model: okay_nabu
-    #   id: okay_nabu
-    # - model: hey_jarvis
-    #   id: hey_jarvis
-    # - model: hey_mycroft
-    #   id: hey_mycroft
+    - model: https://github.com/kahrendt/microWakeWord/releases/download/okay_nabu_20241226.3/okay_nabu.json
+      id: okay_nabu
+    - model: hey_jarvis
+      id: hey_jarvis
+    - model: hey_mycroft
+      id: hey_mycroft
+    - model: ./hey_cerberus_10000.json
+      id: hey_cerberus_10000
     - model: https://github.com/kahrendt/microWakeWord/releases/download/stop/stop.json
       id: stop
       internal: true
@@ -1577,33 +1566,31 @@ micro_wake_word:
                     then:
                       media_player.stop:
                         announcement: true
-                    # else:
-                    #   - if:
-                    #       condition:
-                    #         switch.is_on: wake_sound
-                    #       then:
-                    #         - script.execute:
-                    #             id: play_sound
-                    #             priority: true
-                    #             sound_file: !lambda return id(wake_word_triggered_sound);
-                    #         - delay: 300ms
-                    #   - voice_assistant.start:
-                    #       wake_word: !lambda return wake_word;
+                    else:
+                      - if:
+                          condition:
+                            switch.is_on: wake_sound
+                          then:
+                            - script.execute:
+                                id: play_sound
+                                priority: true
+                                sound_file: !lambda return id(wake_word_triggered_sound);
+                            - delay: 300ms
+                      - voice_assistant.start:
+                          wake_word: !lambda return wake_word;
 
 voice_assistant:
   id: va
   microphone: asr_mic
   media_player: external_media_player
-  # micro_wake_word: mww
-  # use_wake_word: false
-  use_wake_word: true
+  micro_wake_word: mww
+  use_wake_word: false
   noise_suppression_level: 0
   auto_gain: 0 dbfs
   volume_multiplier: 1
   on_client_connected:
     - lambda: id(init_in_progress) = false;
     - micro_wake_word.start:
-    - voice_assistant.start_continuous:
     - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: control_leds
   on_client_disconnected:
@@ -1616,26 +1603,17 @@ voice_assistant:
           and:
             - lambda: return !id(init_in_progress);
             - lambda: return code != "duplicate_wake_up_detected";
+            - lambda: return code != "stt-no-text-recognized";
         then:
           - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};
           - script.execute: control_leds
-          - delay: 1s
-          - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
-          - script.execute: control_leds
-  on_listening:
-    - if:
-        condition:
-          switch.is_on: wake_sound
-        then:
-          - script.execute:
-              id: play_sound
-              priority: true
-              sound_file: !lambda return id(wake_word_triggered_sound);
   # When the voice assistant starts: Play a wake up sound, duck audio.
+  on_start:
     - mixer_speaker.apply_ducking:
         id: media_mixing_input
         decibel_reduction: 20  # Number of dB quieter; higher implies more quiet, 0 implies full volume
         duration: 0.0s         # The duration of the transition (default is no transition)
+  on_listening:
     - lambda: id(voice_assistant_phase) = ${voice_assist_waiting_for_command_phase_id};
     - script.execute: control_leds
   on_stt_vad_start:
@@ -1649,15 +1627,6 @@ voice_assistant:
     - script.execute: control_leds
     # Start a script that would potentially enable the stop word if the response is longer than a second
     - script.execute: activate_stop_word_if_tts_step_is_long
-    - wait_until:
-        lambda: |-
-          return id(external_media_player)->state == media_player::MediaPlayerState::MEDIA_PLAYER_STATE_ANNOUNCING;
-    - wait_until:
-        not:
-          lambda: |-
-            return id(external_media_player)->state == media_player::MediaPlayerState::MEDIA_PLAYER_STATE_ANNOUNCING;
-    - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
-    - script.execute: control_leds
   # When the voice assistant ends ...
   on_end:
     - wait_until:
@@ -1685,7 +1654,6 @@ voice_assistant:
     # Reset the voice assistant phase id and reset the LED animations.
     - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: control_leds
-    - script.execute: handle_voice_assistant_end
   on_timer_finished:
     - switch.turn_on: timer_ringing
   on_timer_started:
