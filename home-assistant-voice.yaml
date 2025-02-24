@@ -1539,7 +1539,7 @@ micro_wake_word:
       id: hey_jarvis
     - model: hey_mycroft
       id: hey_mycroft
-    - model: https://github.com/RobMeades/home-assistant-voice-pe/raw/micro/hey_cerberus_micro_10000.json
+    - model: https://raw.githubusercontent.com/RobMeades/home-assistant-voice-pe/refs/heads/micro/hey_cerberus_micro_10000.json
       id: hey_cerberus_10000
     - model: https://github.com/kahrendt/microWakeWord/releases/download/stop/stop.json
       id: stop
