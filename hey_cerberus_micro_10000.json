@@ -3,8 +3,9 @@
   "wake_word": "Hey Cerberus 10000",
   "author": "Rob Meades",
   "website": "https://www.meades.org/",
-  "model": "./hey_cereberus_micro_10000.tflite",
+  "model": "hey_cereberus_micro_10000.tflite",
   "version": 2,
+  "trained_languages": ["en"],
   "micro": {
     "probability_cutoff": 1.0,
     "sliding_window_size": 5,
