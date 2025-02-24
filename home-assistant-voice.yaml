@@ -1539,7 +1539,7 @@ micro_wake_word:
       id: hey_jarvis
     - model: hey_mycroft
       id: hey_mycroft
-    - model: ./hey_cerberus_10000.json
+    - model: ./hey_cerberus_micro_10000.json
       id: hey_cerberus_10000
     - model: https://github.com/kahrendt/microWakeWord/releases/download/stop/stop.json
       id: stop
